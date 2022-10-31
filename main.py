@@ -54,3 +54,24 @@ while(True):
 	if(getrandbits(3) == 0):
 		stamp()
 	sleep(getrandbits(2)/6)
+
+# GUIDE
+#display.contrast(255)
+#display.text('Hello, World!', 0, 0, 1)
+#display.pixel(0, 0, 1)
+#display.pixel(127, 63, 1)
+#display.show()
+
+#display.fill(0)
+#display.show()
+
+#display.hline(0, 8, 4, 1) # not working
+#display.rect(10, 10, 107, 43, 1) # not working
+
+#import os
+#os.remove("main.py")
+#os.listdir()
+#f = open("main.py", "w")
+#f.write(a)
+#f.close()
+#hit control D to restart the board.
