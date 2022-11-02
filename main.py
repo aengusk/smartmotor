@@ -4,9 +4,13 @@
 from machine import Pin, I2C
 from time import sleep
 from random import getrandbits
-import ssd1306
+#import ssd1306
+import aengussd1306
 #import framebuf
-#import aengusscreen
+
+i2c = I2C(sda = Pin(4), scl = Pin(5))
+#display = ssd1306.SSD1306_I2C(128, 64, i2c)
+display = aengussd1306.SSD1306_I2C(128, 64, i2c, scale = 8)
 
 def rectangle(x, y):
 	for i in range(scale*x, scale*(x+1)):
@@ -39,8 +43,7 @@ def changepointrandomly():
 		
 
 
-i2c = I2C(sda = Pin(4), scl = Pin(5))
-display = ssd1306.SSD1306_I2C(128, 64, i2c)
+
 
 scale = 8
 points = []

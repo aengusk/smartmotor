@@ -26,7 +26,7 @@ SET_CHARGE_PUMP = const(0x8D)
 # Subclassing FrameBuffer provides support for graphics primitives
 # http://docs.micropython.org/en/latest/pyboard/library/framebuf.html
 class SSD1306(framebuf.FrameBuffer):
-    def __init__(self, width, height, scale = 1, external_vcc): #######################################################
+    def __init__(self, width, height, external_vcc, scale = 1): #######################################################
         self.width = width
         self.height = height
         self.external_vcc = external_vcc
@@ -101,26 +101,30 @@ class SSD1306(framebuf.FrameBuffer):
         self.write_cmd(self.pages - 1)
         self.write_data(self.buffer)
 
-    def rectangle(point):    ################################################
+    def rectangle(self, point):    ################################################
         for i in range(self.scale*point[0], self.scale*(point[0]+1)):
             for j in range(self.scale*point[1], self.scale*(point[1]+1)):
                 self.pixel(i, j, 1)
 
-    def update(points, point): ################################################
+    def update(self, points, point): ################################################
         self.fill(0)
-        for i in points.append(point):
+        for i in points:
             self.rectangle(i)
+        try:
+            j = point[1]
+            self.rectangle(point)
+        except IndexError:
+            pass
         self.show()
 
-
 class SSD1306_I2C(SSD1306):
-    def __init__(self, width, height, i2c, scale = 1, addr=0x3C, external_vcc=False):
+    def __init__(self, width, height, i2c, addr=0x3C, external_vcc=False, scale = 1):
         self.i2c = i2c
         self.addr = addr
         self.temp = bytearray(2)
         self.write_list = [b"\x40", None]  # Co=0, D/C#=1
         self.scale = scale ################################################################
-        super().__init__(width, height, scale = scale, external_vcc)
+        super().__init__(width, height, external_vcc, scale = scale)
 
     def write_cmd(self, cmd):
         self.temp[0] = 0x80  # Co=1, D/C#=0
