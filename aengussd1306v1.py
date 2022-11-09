@@ -26,12 +26,13 @@ SET_CHARGE_PUMP = const(0x8D)
 # Subclassing FrameBuffer provides support for graphics primitives
 # http://docs.micropython.org/en/latest/pyboard/library/framebuf.html
 class SSD1306(framebuf.FrameBuffer):
-    def __init__(self, width, height, external_vcc):
+    def __init__(self, width, height, external_vcc, scale = 1): #######################################################
         self.width = width
         self.height = height
         self.external_vcc = external_vcc
         self.pages = self.height // 8
         self.buffer = bytearray(self.pages * self.width)
+        self.scale = scale
         super().__init__(self.buffer, self.width, self.height, framebuf.MONO_VLSB)
         self.init_display()
 
@@ -100,14 +101,30 @@ class SSD1306(framebuf.FrameBuffer):
         self.write_cmd(self.pages - 1)
         self.write_data(self.buffer)
 
+    def rectangle(self, point):    ################################################
+        for i in range(self.scale*point[0], self.scale*(point[0]+1)):
+            for j in range(self.scale*point[1], self.scale*(point[1]+1)):
+                self.pixel(i, j, 1)
+
+    def update(self, points, point): ################################################
+        self.fill(0)
+        for i in points:
+            self.rectangle(i)
+        try:
+            j = point[1]
+            self.rectangle(point)
+        except IndexError:
+            pass
+        self.show()
 
 class SSD1306_I2C(SSD1306):
-    def __init__(self, width, height, i2c, addr=0x3C, external_vcc=False):
+    def __init__(self, width, height, i2c, addr=0x3C, external_vcc=False, scale = 1):
         self.i2c = i2c
         self.addr = addr
         self.temp = bytearray(2)
         self.write_list = [b"\x40", None]  # Co=0, D/C#=1
-        super().__init__(width, height, external_vcc)
+        self.scale = scale ################################################################
+        super().__init__(width, height, external_vcc, scale = scale)
 
     def write_cmd(self, cmd):
         self.temp[0] = 0x80  # Co=1, D/C#=0
@@ -153,40 +170,3 @@ class SSD1306_SPI(SSD1306):
         self.cs(0)
         self.spi.write(buf)
         self.cs(1)
-
-class SSD1306_SMART(SSD1306_I2C):
-#class SSD1306_SMART(ssd1306.SSD1306_I2C):
-    def __init__(self, width, height, i2c, addr=0x3C, external_vcc=False, scale = 8, mode = 0):
-        self.scale = scale
-        self.mode = mode # 0 for learn, 1 for repeat
-        super().__init__(width, height, i2c, addr = 0x3C, external_vcc = external_vcc)
-
-    def square(self, point):
-        for y in range(self.scale*point[1], self.scale*(point[1] + 1)):
-            for x in range(self.scale*point[0], self.scale*(point[0] + 1)):
-                self.pixel(x, y, 1)
-
-    def update(self, points, point):
-        self.fill(0)
-        for i in points:
-            self.square(i)
-        try:
-            j = point[1]
-            self.square(point)
-        except IndexError:
-            pass
-
-        if self.mode == 0:
-            self.text('l', 112, 8, 1)
-            self.text('e', 112, 16, 1)
-            self.text('a', 112, 24, 1)
-            self.text('r', 112, 32, 1)
-            self.text('n', 112, 40, 1)
-        elif self.mode == 1:
-            self.text('r', 112, 8, 1)
-            self.text('e', 112, 16, 1)
-            self.text('p', 112, 24, 1)
-            self.text('e', 112, 32, 1)
-            self.text('a', 112, 40, 1)
-            self.text('t', 112, 48, 1)
-        self.show()
