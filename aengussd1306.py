@@ -166,6 +166,21 @@ class SSD1306_SMART(SSD1306_I2C):
             for x in range(self.scale*point[0], self.scale*(point[0] + 1)):
                 self.pixel(x, y, 1)
 
+    def circle(self, point):
+        def dist(x1, y1, x2, y2):
+            from math import sqrt
+            return sqrt((x2 - x1)**2 + (y2 - y1)**2)
+        Xl = self.scale * point[0] 
+        Xh = self.scale * (point[0] + 1)
+        Xc = (Xl + Xh - 1)/2
+        Yl = self.scale * point[1]
+        Yh = self.scale * (point[1] + 1)
+        Yc = (Yl + Yh - 1)/2
+        for y in range(Yl, Yh):
+            for x in range(Xl, Xh):
+                if dist(x, y, Xc, Yc) <= self.scale * 51/100:
+                    self.pixel(x, y, 1)
+
     def update(self, points, point):
         self.fill(0)
         for i in points:
